@@ -22,7 +22,8 @@
       SEMAPHORE_MTB_REPO="https://github.com/worldcoin/semaphore-mtb";
       SEMAPHORE_MTB_DIR="${WORKDIR}/semaphore-mtb";
       # Private key used with local ganache network (obviusly don't use this anywhere live)
-      ACC_PRIV_KEY="0x135e302f7864f32cc437d522497ade6012862253e9495f46cd1f5d92092d5e45";
+      ACC_PRIV_KEY="0x3afcbc1ecfab706d2ae503064cabc4e3348901588d9373e27f1f02dd8dd134e4";
+      ACC_PUB_KEY="0x693bc03c4917864bbf3dc75916369d1546f4191d";
       RPC_URL="http://127.0.0.1:7545";
       TREE_DEPTH="16";
       BATCH_SIZE="3";
@@ -41,15 +42,16 @@
       pkgs          = import nixpkgs { inherit system overlays; };
     in {
         devShell = pkgs.mkShell {
+        nativeBuildInputs = [ pkgs.pkg-config ];
         buildInputs = [
           pkgs.expect
           pkgs.git
+          pkgs.perl
           # Rust
           pkgs.openssl
           pkgs.rust-bin.nightly.latest.default
           pkgs.rust-analyzer
           pkgs.clippy
-          pkgs.pkg-config
           pkgs.protobuf
           # Golang
           pkgs.go
@@ -67,15 +69,14 @@
           pkgs.solc
         ];
 
+        PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+
         shellHook = ''
           export PS1="\e[1;33m\][dev]\e[1;34m\] \w $ \e[0m\]";
           
           echo "################################################";
           echo "### Signup-sequencer flake development setup ###";
           echo "################################################";
-
-          export OPENSSL_DIR="${pkgs.openssl.dev}"
-          export OPENSSL_LIB_DIR="${pkgs.openssl.out}/lib"
 
           if [ ! -d "${SEQUENCER_DIR}" ]; then
             echo "Cloning sequencer repository..."
@@ -109,11 +110,11 @@
 
           if [ $? -eq 0 ]; then
             echo "Semaphore-mtb build successful."
-            read -p "Do you want generate mbu keys? (yes/no) " yn
+            read -p "Do you want generate gnark-mbu keys? (yes/no) " yn
             case $yn in
               yes ) echo "Generating keys.."
-              cd ${SEMAPHORE_MTB_DIR} && ./gnark-mbu setup --batch-size ${BATCH_SIZE} --tree-depth ${TREE_DEPTH} --mode insertion --output keys
-              echo "Keys generated."
+              cd ${SEMAPHORE_MTB_DIR} && ./gnark-mbu setup --batch-size ${BATCH_SIZE} --tree-depth ${TREE_DEPTH} --mode insertion --output keys &
+              echo "Keys generated to ${SEMAPHORE_MTB_DIR}/keys."
               export KEYS_FILE=${SEMAPHORE_MTB_DIR}/keys;;
               * );;
             esac
@@ -121,7 +122,7 @@
             case $yn in
               yes ) echo "Generating contract.."
               cd ${SEMAPHORE_MTB_DIR} && ./gnark-mbu export-solidity --keys-file keys --output verifier
-              echo "verifier generated.";;
+              echo "verifier contract generated.";;
               * );;
             esac
           else
@@ -250,8 +251,7 @@ EOL
           read -p "Do you want to output signup-sequencer launch command?" yn;
           case $yn in 
           yes )
-            echo TREE_DEPTH=${TREE_DEPTH} cargo run -- --batch-size ${BATCH_SIZE} --batch-timeout-seconds 10 --database postgres://postgres:postgres@postgres:5432 --identity-manager-address $WORLDID_MANAGER
-                --signing-key ${ACC_PRIV_KEY}
+            echo TREE_DEPTH=${TREE_DEPTH} cargo run -- --batch-timeout-seconds 10 --database postgres://postgres:postgres@postgres:5432 --identity-manager-address $WORLDID_MANAGER --oz-api-key "" --oz-api-secret "" --oz-api-url "${RPC_URL}" --oz-address "${ACC_PUB_KEY}"
             ;;
           * ) echo "Setup complete"
           ;;
