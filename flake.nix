@@ -14,7 +14,7 @@
       WORKDIR="/home/menko/Documents/reilabs/worldcoin/sequencer";
       # signup sequencer repo and directory
       SEQUENCER_REPO="https://github.com/worldcoin/signup-sequencer";
-      SEQUENCER_DIR="${WORKDIR}/repo_folder";
+      SEQUENCER_DIR="${WORKDIR}/signup-sequencer";
       # world id contracts repo and directory
       WORLD_ID_REPO="https://github.com/worldcoin/world-id-contracts";
       WORLD_ID_DIR="${WORKDIR}/world-id-contracts";
@@ -225,8 +225,8 @@ EOL
               fi
 
               cd "${WORKDIR}/database-docker"
-              docker-compose down 2>&1
-              docker-compose up 2>&1
+              docker-compose down > /dev/null 2>&1
+              docker-compose up > /dev/null 2>&1 &
               ;;
 
             no ) 
