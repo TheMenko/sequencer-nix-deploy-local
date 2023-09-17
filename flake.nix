@@ -105,22 +105,22 @@
           echo "Started ethereum chain.";
           
           echo "Building semaphore-mtb..";
-          cd ${WORKDIR}/semaphore-mtb && go build 2>&1;
+          cd ${SEMAPHORE_MTB_DIR} && go build 2>&1;
 
           if [ $? -eq 0 ]; then
             echo "Semaphore-mtb build successful."
             read -p "Do you want generate mbu keys? (yes/no) " yn
             case $yn in
               yes ) echo "Generating keys.."
-              cd ${WORKDIR}/semaphore-mtb && ./gnark-mbu setup --batch-size ${BATCH_SIZE} --tree-depth ${TREE_DEPTH} --mode insertion --output keys
+              cd ${SEMAPHORE_MTB_DIR} && ./gnark-mbu setup --batch-size ${BATCH_SIZE} --tree-depth ${TREE_DEPTH} --mode insertion --output keys
               echo "Keys generated."
-              export KEYS_FILE=${WORKDIR}/semaphore-mtb/keys;;
+              export KEYS_FILE=${SEMAPHORE_MTB_DIR}/keys;;
               * );;
             esac
             read -p "Do you want generate verifier contract? (yes/no) " yn
             case $yn in
               yes ) echo "Generating contract.."
-              cd ${WORKDIR}/semaphore-mtb && ./gnark-mbu export-solidity --keys-file keys --output verifier
+              cd ${SEMAPHORE_MTB_DIR} && ./gnark-mbu export-solidity --keys-file keys --output verifier
               echo "verifier generated.";;
               * );;
             esac
@@ -133,7 +133,7 @@
           LOGFILE="${WORKDIR}/deploy_out.log";
           case $yn in 
             yes ) echo "Building worldcoin contracts..";
-              cd ${WORKDIR}/world-id-contracts && make > /dev/null 2>&1;
+              cd ${WORLD_ID_DIR} && make > /dev/null 2>&1;
 
               # clear log file
               > $LOGFILE
@@ -172,7 +172,7 @@
                 send "\r"
     
                 expect -re {Enter path to the Semaphore-MTB verifier contract file matching your batch size, or leave empty to generate it:.*}
-                send "${WORKDIR}/semaphore-mtb/verifier\r"
+                send "${SEMAPHORE_MTB_DIR}/verifier\r"
 
                 expect -re {Enter initial root, or leave empty to compute based on tree depth.*}
                 send "\r"
@@ -181,7 +181,7 @@
                 send "${TREE_DEPTH}\r"
 
                 # expect -re {Enter path to the prover/verifier keys file, or leave empty to set it up:.*}
-                # send "${WORKDIR}/semaphore-mtb/keys\r"
+                # send "${SEMAPHORE_MTB_DIR}/keys\r"
     
                 expect eof
 EOD
@@ -239,7 +239,7 @@ EOL
           esac
 
           echo "Building signup sequencer..";
-          cd ${WORKDIR}/signup-sequencer && cargo build > /dev/null 2>&1;
+          cd ${SEQUENCER_DIR} && cargo build > /dev/null 2>&1;
 
           if [ $? -eq 0 ]; then
             echo "Signup sequencer build successful."
