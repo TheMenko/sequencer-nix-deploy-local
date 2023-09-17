@@ -84,14 +84,14 @@
             echo "Sequencer folder exists. Skipping clone."
           fi
           
-          if [ ! -d "${WORLD_ID_REPO}" ]; then
+          if [ ! -d "${WORLD_ID_DIR}" ]; then
             echo "Cloning world id contracts repository..."
             git clone ${WORLD_ID_REPO} ${WORLD_ID_DIR}
           else
             echo "World id contracts folder exists. Skipping clone."
           fi
 
-          if [ ! -d "${SEMAPHORE_MTB_REPO}" ]; then
+          if [ ! -d "${SEMAPHORE_MTB_DIR}" ]; then
             echo "Cloning semaphore-mtb repository..."
             git clone ${SEMAPHORE_MTB_REPO} ${SEMAPHORE_MTB_DIR}
           else
