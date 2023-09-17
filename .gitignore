@@ -1,7 +1,6 @@
 chain_network
 database-docker
 deploy_out.log
-flake.lock
 semaphore-mtb
 semaphore-rs
 signup-sequencer
