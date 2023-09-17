@@ -12,6 +12,15 @@
     flake-utils.lib.eachDefaultSystem (system: let
       # change workdir for your own home, its important that it uses full path
       WORKDIR="/home/menko/Documents/reilabs/worldcoin/sequencer";
+      # signup sequencer repo and directory
+      SEQUENCER_REPO="https://github.com/worldcoin/signup-sequencer";
+      SEQUENCER_DIR="${WORKDIR}/repo_folder";
+      # world id contracts repo and directory
+      WORLD_ID_REPO="https://github.com/worldcoin/world-id-contracts";
+      WORLD_ID_DIR="${WORKDIR}/world-id-contracts";
+      # semaphore mtb repo and directory
+      SEMAPHORE_MTB_REPO="https://github.com/worldcoin/semaphore-mtb";
+      SEMAPHORE_MTB_DIR="${WORKDIR}/semaphore-mtb";
       # Private key used with local ganache network (obviusly don't use this anywhere live)
       ACC_PRIV_KEY="0x135e302f7864f32cc437d522497ade6012862253e9495f46cd1f5d92092d5e45";
       RPC_URL="http://127.0.0.1:7545";
@@ -34,6 +43,7 @@
         devShell = pkgs.mkShell {
         buildInputs = [
           pkgs.expect
+          pkgs.git
           # Rust
           pkgs.openssl
           pkgs.rust-bin.nightly.latest.default
@@ -66,7 +76,28 @@
 
           export OPENSSL_DIR="${pkgs.openssl.dev}"
           export OPENSSL_LIB_DIR="${pkgs.openssl.out}/lib"
+
+          if [ ! -d "${SEQUENCER_DIR}" ]; then
+            echo "Cloning sequencer repository..."
+            git clone ${SEQUENCER_REPO} ${SEQUENCER_DIR}
+          else
+            echo "Sequencer folder exists. Skipping clone."
+          fi
           
+          if [ ! -d "${WORLD_ID_REPO}" ]; then
+            echo "Cloning world id contracts repository..."
+            git clone ${WORLD_ID_REPO} ${WORLD_ID_DIR}
+          else
+            echo "World id contracts folder exists. Skipping clone."
+          fi
+
+          if [ ! -d "${SEMAPHORE_MTB_REPO}" ]; then
+            echo "Cloning semaphore-mtb repository..."
+            git clone ${SEMAPHORE_MTB_REPO} ${SEMAPHORE_MTB_DIR}
+          else
+            echo "Semaphore-mtb folder exists. Skipping clone."
+          fi
+
           echo "Starting or configuring ethereum chain..";
           pkill ganache-cli
           mkdir -p ${WORKDIR}/chain_network;
