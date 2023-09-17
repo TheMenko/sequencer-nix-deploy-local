@@ -17,6 +17,7 @@
       RPC_URL="http://127.0.0.1:7545";
       TREE_DEPTH="16";
       BATCH_SIZE="3";
+      # TODO: remove overlay when nix package updates to 0.8.21 // current 0.8.19
       solcOverlay = self: super: {
         solc = super.solc.overrideAttrs (oldAttrs: {
           patches = [];
@@ -69,11 +70,6 @@
           echo "Starting or configuring ethereum chain..";
           pkill ganache-cli
           mkdir -p ${WORKDIR}/chain_network;
-          ### this is temporary ###
-          rm ${WORKDIR}/chain_network/*;
-          pkill ganache
-          pkill ganache-cli
-          ########################
           ganache-cli --detach --db ${WORKDIR}/chain_network --account="${ACC_PRIV_KEY}, 150000000000000000000000" -i 1337 --server.port "7545" #> /dev/null 2>&1 &
           echo "Started ethereum chain.";
           
@@ -171,14 +167,6 @@ EOD
           WORLDID_MANAGER_IMPL=$(grep -oP 'Deployed WorldID Identity Manager Implementation to \K0x[0-9a-fA-F]+' $LOGFILE)
           WORLDID_MANAGER=$(grep -oP 'Deployed WorldID Identity Manager to \K0x[0-9a-fA-F]+' $LOGFILE)
 
-          echo "MTB Verifier Address: $MTB_VERIFIER"
-          echo "Pairing Library Address: $PAIRING_LIBRARY"
-          echo "Semaphore Verifier Address: $SEMAPHORE_VERIFIER"
-          echo "Registration Verifier Lookup Table Address: $REG_VERIFIER_LUT"
-          echo "Update Verifier Lookup Table Address: $UPDATE_VERIFIER_LUT"
-          echo "WorldID Identity Manager Implementation Address: $WORLDID_MANAGER_IMPL"
-          echo "WorldID Identity Manager Address: $WORLDID_MANAGER"
-         
           read -p "Do you want to start a database with docker? (yes/no)" yn
 
           case $yn in 
