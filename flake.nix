@@ -42,11 +42,11 @@
       pkgs          = import nixpkgs { inherit system overlays; };
     in {
         devShell = pkgs.mkShell {
-        nativeBuildInputs = [ pkgs.pkg-config ];
         buildInputs = [
           pkgs.expect
           pkgs.git
           pkgs.perl
+          pkgs.pkg-config
           # Rust
           pkgs.openssl
           pkgs.rust-bin.nightly.latest.default
@@ -69,7 +69,7 @@
           pkgs.solc
         ];
 
-        PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+        PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig";
 
         shellHook = ''
           export PS1="\e[1;33m\][dev]\e[1;34m\] \w $ \e[0m\]";
@@ -77,6 +77,9 @@
           echo "################################################";
           echo "### Signup-sequencer flake development setup ###";
           echo "################################################";
+
+          export OPENSSL_DIR="${pkgs.openssl.dev}";
+          export OPENSSL_LIB_DIR="${pkgs.openssl.out}/lib";
 
           if [ ! -d "${SEQUENCER_DIR}" ]; then
             echo "Cloning sequencer repository..."
@@ -113,7 +116,7 @@
             read -p "Do you want generate gnark-mbu keys? (yes/no) " yn
             case $yn in
               yes ) echo "Generating keys.."
-              cd ${SEMAPHORE_MTB_DIR} && ./gnark-mbu setup --batch-size ${BATCH_SIZE} --tree-depth ${TREE_DEPTH} --mode insertion --output keys &
+              cd ${SEMAPHORE_MTB_DIR} && ./gnark-mbu setup --batch-size ${BATCH_SIZE} --tree-depth ${TREE_DEPTH} --mode insertion --output keys > /dev/null 2>&1
               echo "Keys generated to ${SEMAPHORE_MTB_DIR}/keys."
               export KEYS_FILE=${SEMAPHORE_MTB_DIR}/keys;;
               * );;
@@ -239,23 +242,16 @@ EOL
               ;;
           esac
 
-          echo "Building signup sequencer..";
-          cd ${SEQUENCER_DIR} && cargo build > /dev/null 2>&1;
-
-          if [ $? -eq 0 ]; then
-            echo "Signup sequencer build successful."
-          else
-            echo "Signup sequencer build failed."
-          fi
-
           read -p "Do you want to output signup-sequencer launch command?" yn;
           case $yn in 
           yes )
-            echo TREE_DEPTH=${TREE_DEPTH} cargo run -- --batch-timeout-seconds 10 --database postgres://postgres:postgres@postgres:5432 --identity-manager-address $WORLDID_MANAGER --oz-api-key "" --oz-api-secret "" --oz-api-url "${RPC_URL}" --oz-address "${ACC_PUB_KEY}"
+            echo "TREE_DEPTH=${TREE_DEPTH} cargo run -- --batch-timeout-seconds 10 --database postgres://postgres:postgres@postgres:5432 --ethereum-provider ${RPC_URL} --identity-manager-address $WORLDID_MANAGER --oz-api-key \"\"  --oz-api-secret \"\" --oz-api-url ${RPC_URL} --oz-address ${ACC_PUB_KEY}"
             ;;
           * ) echo "Setup complete"
           ;;
           esac
+
+          cd ${SEQUENCER_DIR};
           
           if command -v zsh >/dev/null 2>&1; then
             exec zsh
