@@ -242,10 +242,10 @@ EOL
               ;;
           esac
 
-          read -p "Do you want to output signup-sequencer launch command?" yn;
+          read -p "Do you want to output signup-sequencer launch command? (yes/no)" yn;
           case $yn in 
           yes )
-            echo "TREE_DEPTH=${TREE_DEPTH} cargo run -- --batch-timeout-seconds 10 --database postgres://postgres:postgres@postgres:5432 --ethereum-provider ${RPC_URL} --identity-manager-address $WORLDID_MANAGER --oz-api-key \"\"  --oz-api-secret \"\" --oz-api-url ${RPC_URL} --oz-address ${ACC_PUB_KEY}"
+            echo "TREE_DEPTH=${TREE_DEPTH} cargo run -- --batch-timeout-seconds 10 --database postgres://postgres:postgres@localhost:5432 --ethereum-provider ${RPC_URL} --identity-manager-address $WORLDID_MANAGER --oz-api-key \"\"  --oz-api-secret \"\" --oz-api-url ${RPC_URL} --oz-address ${ACC_PUB_KEY}"
             ;;
           * ) echo "Setup complete"
           ;;
